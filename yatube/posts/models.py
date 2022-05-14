@@ -92,8 +92,9 @@ class Comment(models.Model):
     )
 
     class Meta:
+        ordering = ('-created',)
         verbose_name = "Коментарий"
-        verbose_name_plural = "Коментари"
+        verbose_name_plural = "Коментари к постам"
 
     def __str__(self):
         return self.text
@@ -105,16 +106,24 @@ class Follow(models.Model):
         on_delete=models.CASCADE,
         related_name='follower',
         verbose_name="Пользователь",
-        # тот КТО подписался
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='following',
         verbose_name="Автор",
-        # тот НА Кого подписались
     )
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                name='exclude a new subscription when it is valid',
+                fields=['user', 'author'],
+            ),
+            models.CheckConstraint(
+                name="disable subscribe to yourself",
+                check=~models.Q(user=models.F("author")),
+            ),
+        ]
         verbose_name = "Подписчик"
         verbose_name_plural = "Подписчики"

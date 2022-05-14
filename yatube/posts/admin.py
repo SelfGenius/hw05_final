@@ -15,19 +15,16 @@ class PostAdmin(admin.ModelAdmin):
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):
     list_display = ('title', 'slug', 'description',)
-    list_display_links = ('title', 'slug')
+    list_display_links = ('title',)
     prepopulated_fields = {"slug": ("title",)}
 
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ('post', 'author', 'text', 'created')
-    search_fields = ('post', 'author', 'text', 'created')
-    list_filter = ('post', 'author', 'text', 'created')
+    list_display = search_fields = ('post', 'author', 'text', 'created')
+    list_filter = ('created',)
 
 
 @admin.register(Follow)
 class FollowAdmin(admin.ModelAdmin):
-    list_display = ('user', 'author')
-    search_fields = ('user', 'author')
-    list_filter = ('user', 'author')
+    list_display = search_fields = ('user', 'author')

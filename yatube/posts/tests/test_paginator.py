@@ -14,18 +14,19 @@ class PaginatorCountTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.group = Group.objects.create(
-            title='Тестовое название группы',
-            slug='test-slug',
-            description='Тестовое описание группы',
-        )
         cls.user_author = User.objects.create_user(
             username='user_author'
         )
         cls.user_follower = User.objects.create_user(
             username='follower'
         )
+        cls.group = Group.objects.create(
+            title='Тестовое название группы',
+            slug='test-slug',
+            description='Тестовое описание группы',
+        )
         cls.ALL_POST_COUNT = 16
+
         Post.objects.bulk_create(
             Post(author=cls.user_author,
                  text=f'Тестовый пост{num_post}',

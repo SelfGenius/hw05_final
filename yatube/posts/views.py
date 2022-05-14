@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render, redirect
-from django.views.decorators.cache import cache_page
 
 from .forms import PostForm, CommentForm
 from .models import Group, Post, User, Follow
@@ -14,9 +14,11 @@ def paginator(page_number, post_list):
     return page_obj
 
 
-@cache_page(20)
 def index(request):
-    post_list = Post.objects.select_related('author', 'group')
+    post_list = cache.get('index_page')
+    if not post_list:
+        post_list = Post.objects.select_related('author', 'group')
+        cache.set('index_page', post_list, 20)
     context = {
         'page_obj': paginator(request.GET.get('page'), post_list),
         'title': 'Последние обновления на сайте',
@@ -35,15 +37,15 @@ def group_posts(request, slug):
 
 
 def profile(request, username):
-    user = get_object_or_404(User, username=username)
-    post_list = user.posts.select_related('group')
-    following = False
+    post_author = get_object_or_404(User, username=username)
+    post_list = post_author.posts.select_related('group')
+    following = None
     if request.user.is_authenticated:
-        following = user.following.filter(user=request.user).exists()
+        following = post_author.following.filter(user=request.user).exists()
     context = {
         'page_obj': paginator(request.GET.get('page'), post_list),
         'count_post': post_list.count,
-        'author': user,
+        'author': post_author,
         'following': following,
     }
     return render(request, 'posts/profile.html', context)
@@ -57,7 +59,7 @@ def post_detail(request, post_id):
         'post': post,
         'count_post': post.author.posts.count(),
         'form': CommentForm(),
-        'comments': post.comments.all()
+        'comments': post.comments.all().prefetch_related('author')
     }
     return render(request, 'posts/post_detail.html', context,)
 
@@ -110,7 +112,9 @@ def add_comment(request, post_id):
 
 @login_required
 def follow_index(request):
-    post_list = Post.objects.filter(author__following__user=request.user)
+    post_list = Post.objects.select_related('author', 'group').filter(
+        author__following__user=request.user
+    )
     context = {
         'page_obj': paginator(request.GET.get('page'), post_list),
         'title': 'Подписки на любимых авторов',
@@ -128,10 +132,7 @@ def profile_follow(request, username):
 
 @login_required
 def profile_unfollow(request, username):
-    follower = get_object_or_404(
-        Follow,
-        user=request.user,
-        author__username=username
-    )
-    follower.delete()
+    if username != request.user.username:
+        author = get_object_or_404(User, username=username)
+        Follow.objects.filter(user=request.user, author=author).delete()
     return redirect('posts:profile', username)

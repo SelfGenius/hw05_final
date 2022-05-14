@@ -20,38 +20,32 @@ class PostPagesTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.user = User.objects.create_user(
+            username='user_author'
+        )
         cls.group = Group.objects.create(
             title='Тестовое название группы',
             slug='test-slug',
             description='Тестовое описание группы'
         )
-        cls.another_group = Group.objects.create(
-            title='Другая группа',
-            slug='another_group_slug',
-            description='Описание другой группы'
-        )
-        cls.user_author = User.objects.create_user(
-            username='user_author'
-        )
         cls.image = SimpleUploadedFile(
             name='small.gif',
             content=(
-             b'\x47\x49\x46\x38\x39\x61\x02\x00'
-             b'\x01\x00\x80\x00\x00\x00\x00\x00'
-             b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
-             b'\x00\x00\x00\x2C\x00\x00\x00\x00'
-             b'\x02\x00\x01\x00\x00\x02\x02\x0C'
-             b'\x0A\x00\x3B'
+                b'\x47\x49\x46\x38\x39\x61\x02\x00'
+                b'\x01\x00\x80\x00\x00\x00\x00\x00'
+                b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+                b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+                b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+                b'\x0A\x00\x3B'
             ),
             content_type='image/gif'
         )
         cls.post = Post.objects.create(
             text='Текст поста',
-            author=cls.user_author,
+            author=cls.user,
             group=cls.group,
             image=cls.image,
         )
-        cls
 
     @classmethod
     def tearDownClass(cls):
@@ -60,17 +54,15 @@ class PostPagesTests(TestCase):
 
     def setUp(self):
         self.authorized_client = Client()
-        self.authorized_client.force_login(self.user_author)
+        self.authorized_client.force_login(self.user)
         cache.clear()
 
     def test_pages_show_correct_context(self):
         """Проверка,что контекст на страницах правильно сформирован ."""
         pages = (
             reverse('posts:index'),
-            reverse('posts:group_list',
-                    kwargs={'slug': self.group.slug}),
-            reverse('posts:profile',
-                    kwargs={'username': self.user_author.username}),
+            reverse('posts:group_list', args=[self.group.slug]),
+            reverse('posts:profile', args=[self.user.username]),
         )
         for page in pages:
             with self.subTest(page=page):
@@ -89,20 +81,20 @@ class PostPagesTests(TestCase):
     def test_form_create_correct_context(self):
         """Шаблон 'form create' сформирован с правильным контекстом."""
         response = self.authorized_client.get(reverse('posts:post_create'))
-        self.assertEqual(type(response.context['form']), type(PostForm()))
+        self.assertEqual(type(response.context['form']), PostForm)
 
     def test_form_edit_correct_context(self):
         """Шаблон 'form edit' сформирован с правильным контекстом."""
         response = self.authorized_client.get(
             reverse('posts:post_edit', kwargs={'post_id': self.post.id}))
-        self.assertEqual(type(response.context['form']), type(PostForm()))
+        self.assertEqual(type(response.context['form']), PostForm)
         self.assertEqual(response.context['form'].instance, self.post)
 
     def test_cache(self):
         """Проверка кеширование главной страницы"""
         post_cache = Post.objects.create(
             text='Тест кеша',
-            author=self.user_author,
+            author=self.user,
         )
         post_add = self.authorized_client.get(reverse('posts:index')).content
         post_cache.delete()
@@ -111,7 +103,3 @@ class PostPagesTests(TestCase):
         cache.clear()
         post_clear = self.authorized_client.get(reverse('posts:index')).content
         self.assertNotEqual(post_add, post_clear)
-
-    def test_folow(self):
-        """На следующем ревью здесь будет тесты работы подписок."""
-        pass

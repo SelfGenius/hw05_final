@@ -10,15 +10,19 @@ class PostsModelTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username='auth')
-        cls.user_follower = User.objects.create_user(username='auth_follower')
+        cls.user_author = User.objects.create_user(
+            username='post_author'
+        )
+        cls.user_follower = User.objects.create_user(
+            username='follower'
+        )
         cls.group = Group.objects.create(
             title='Тестовая группа',
             slug='Тестовый слаг',
             description='Тестовое описание',
         )
         cls.post = Post.objects.create(
-            author=cls.user,
+            author=cls.user_author,
             text='Тестовая пост длинее 15 символов',
             group=cls.group,
         )
@@ -29,7 +33,7 @@ class PostsModelTest(TestCase):
         )
         cls.follow = Follow.objects.create(
             user=cls.user_follower,
-            author=cls.user,
+            author=cls.user_author,
         )
 
     def test_str(self):

@@ -1,6 +1,5 @@
 import shutil
 import tempfile
-from http import HTTPStatus
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -19,18 +18,22 @@ class PostPagesTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.user_author = User.objects.create_user(
+            username='user_author'
+        )
+        cls.commentator = User.objects.create_user(
+            username='commentator'
+        )
         cls.group = Group.objects.create(
             title='Тестовое название группы',
             slug='test-slug',
-            description='Тестовое описание группы')
-        cls.user_author = User.objects.create_user(
-            username='user_author')
-        cls.commentator = User.objects.create_user(
-            username='commentator')
+            description='Тестовое описание группы'
+        )
         cls.post = Post.objects.create(
             text='Текст поста созданого в фикстурах',
             author=cls.user_author,
-            group=cls.group)
+            group=cls.group,
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -48,14 +51,12 @@ class PostPagesTests(TestCase):
         form_data = {
             'text': 'Новый пост, созданный не авторизированным клиентом. ',
             'group': self.group.id,
-
         }
         response = self.guest_user.post(
             reverse('posts:post_create'),
             data=form_data,
             follow=True
         )
-        self.assertEqual(response.status_code, HTTPStatus.OK)
         redirect = f"{reverse('login')}?next={reverse('posts:post_create')}"
         self.assertRedirects(response, redirect)
         self.assertEqual(Post.objects.count(), posts_count)
@@ -87,9 +88,7 @@ class PostPagesTests(TestCase):
         )
         self.assertRedirects(
             response,
-            reverse(
-                'posts:profile', kwargs={'username': self.user_author.username}
-            )
+            reverse('posts:profile', args=[self.user_author.username])
         )
         new_post = Post.objects.first()
         self.assertEqual(Post.objects.count(), posts_count + 1)
@@ -122,15 +121,15 @@ class PostPagesTests(TestCase):
             'text': 'Текст поста ,измененный авторизированным клиентом.',
             'group': self.group.id,
         }
-        response = self.authorized_client.post(reverse(
-            'posts:post_edit', args=[self.post.id]),
-            data=form_data, follow=True
+        response = self.authorized_client.post(
+            reverse('posts:post_edit', args=[self.post.id]),
+            data=form_data,
+            follow=True
         )
         self.assertRedirects(
             response,
             reverse('posts:post_detail', kwargs={'post_id': self.post.id})
         )
-        self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertTrue(Post.objects.filter(
             text=form_data['text'],
             group=self.group.id,
@@ -143,8 +142,7 @@ class PostPagesTests(TestCase):
         form_data = {'text': 'Коментарий от авторизированного пользователя'}
         self.authorized_client.force_login(self.commentator)
         response = self.authorized_client.post(
-            reverse('posts:add_comment',
-                    kwargs={'post_id': self.post.id}),
+            reverse('posts:add_comment', kwargs={'post_id': self.post.id}),
             data=form_data,
             follow=True
         )
@@ -165,8 +163,7 @@ class PostPagesTests(TestCase):
         comments_count = Comment.objects.count()
         form_data = {'text': 'Коментарий от не авторизированного пользователя'}
         response = self.guest_user.post(
-            reverse('posts:add_comment',
-                    kwargs={'post_id': self.post.id}),
+            reverse('posts:add_comment', kwargs={'post_id': self.post.id}),
             data=form_data,
             follow=True
         )

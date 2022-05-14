@@ -14,16 +14,16 @@ class PostURLTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.group = Group.objects.create(
-            title='Тестовое название группы',
-            slug='test_slug',
-            description='Тестовое описание группы',
-        )
         cls.user_author = User.objects.create_user(
             username='user_author'
         )
         cls.user_another = User.objects.create_user(
             username='user_another'
+        )
+        cls.group = Group.objects.create(
+            title='Тестовое название группы',
+            slug='test_slug',
+            description='Тестовое описание группы',
         )
         cls.post = Post.objects.create(
             text='Текст который больше 15 символов',
@@ -146,6 +146,8 @@ class PostURLTests(TestCase):
                 redirect = f"{reverse('login')}?next={url}"
                 self.assertRedirects(response, redirect)
 
+# А этот тест я бы удалил. И в файле test_forms, где проверяется данная функция
+# можно сделал полноценый тест "Проверка редактирования автором чужого поста."
     def test_authorized_user_redirect_post_edit(self):
         """Проверка редиректа при редактировании автором чужого поста."""
         url = reverse('posts:post_edit', kwargs={'post_id': self.post.id})
@@ -154,6 +156,8 @@ class PostURLTests(TestCase):
         redirect = reverse('posts:post_detail', args=[self.post.pk])
         self.assertRedirects(response, redirect)
 
+# Нужны ли нам, следующие 3 теста. Если в тестах по проверки этих функции
+# полностью проверятся работы функции в т.ч и редирект?
     def test_authorized_user_redirect_add_comment(self):
         """Проверка редиректа после добавление коментария пользователем."""
         url = reverse('posts:add_comment', kwargs={'post_id': self.post.id})
