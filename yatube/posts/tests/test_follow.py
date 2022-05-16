@@ -69,7 +69,7 @@ class FollowTests(TestCase):
             response,
             reverse('posts:profile', args=[self.user_post_author.username])
         )
-        self.assertEqual(Follow.objects.count(), subscriptions_count-1)
+        self.assertEqual(Follow.objects.count(), subscriptions_count - 1)
         self.assertFalse(Follow.objects.filter(
             user=self.user_follower,
             author=self.user_post_author,
