@@ -81,13 +81,13 @@ class PostPagesTests(TestCase):
     def test_form_create_correct_context(self):
         """Шаблон 'form create' сформирован с правильным контекстом."""
         response = self.authorized_client.get(reverse('posts:post_create'))
-        self.assertEqual(type(response.context['form']), PostForm)
+        self.assertIsInstance(response.context['form'], PostForm)
 
     def test_form_edit_correct_context(self):
         """Шаблон 'form edit' сформирован с правильным контекстом."""
         response = self.authorized_client.get(
             reverse('posts:post_edit', kwargs={'post_id': self.post.id}))
-        self.assertEqual(type(response.context['form']), PostForm)
+        self.assertIsInstance(response.context['form'], PostForm)
         self.assertEqual(response.context['form'].instance, self.post)
 
     def test_cache(self):

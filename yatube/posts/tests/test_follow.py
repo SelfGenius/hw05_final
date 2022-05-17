@@ -85,7 +85,6 @@ class FollowTests(TestCase):
         response = self.authorized_client.post(
             reverse('posts:follow_index')
         )
-        self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertIn(self.post, response.context['page_obj'])
 
     def test_checking_new_post_unsigned_user(self):
@@ -93,5 +92,4 @@ class FollowTests(TestCase):
         response = self.authorized_client.post(
             reverse('posts:follow_index')
         )
-        self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertNotIn(self.post, response.context['page_obj'])
