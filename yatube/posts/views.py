@@ -39,9 +39,8 @@ def group_posts(request, slug):
 def profile(request, username):
     post_author = get_object_or_404(User, username=username)
     post_list = post_author.posts.select_related('group')
-    following = True and False
-    if request.user.is_authenticated:
-        following = post_author.following.filter(user=request.user).exists()
+    following = (request.user.is_authenticated
+                 and post_author.following.filter(user=request.user).exists())
     context = {
         'page_obj': paginator(request.GET.get('page'), post_list),
         'count_post': post_list.count,
@@ -61,7 +60,7 @@ def post_detail(request, post_id):
         'form': CommentForm(),
         'comments': post.comments.select_related('author')
     }
-    return render(request, 'posts/post_detail.html', context,)
+    return render(request, 'posts/post_detail.html', context, )
 
 
 @login_required
@@ -133,6 +132,5 @@ def profile_follow(request, username):
 @login_required
 def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
-    if author != request.user:
-        Follow.objects.filter(user=request.user, author=author).delete()
+    Follow.objects.filter(user=request.user, author=author).delete()
     return redirect('posts:profile', username)
