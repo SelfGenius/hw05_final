@@ -39,15 +39,27 @@
       {% if user == post.author %}
       <a class="btn btn-primary" href="{% url 'posts:post_edit' post.id %}">Редактировать запись</a>
       {% endif %}
+
       {% if user.is_authenticated %}
     <div class="card my-4">
-      <h5 class="card-header">Добавить комментарий:</h5>
+      <h5 class="card-header">Оставь комментарий:</h5>
         <div class="card-body">
-          <form method="post" action="{% url 'posts:add_comment' post.id %}">
+          <form method="post" action="{% url 'posts:add_comment' post.id %}"
+            enctype="multipart/form-data">
             {% csrf_token %}
-          <div class="form-group mb-2">
-            {{ form.text|addclass:"form-control" }}
-          </div>
+            {% for field in form %}
+              <div class="form-group mb-2">
+              <label for="{{ field.id_for_label }}">
+                {{ field.label }}
+                <span class="required text-danger"></span>
+              </label>
+              <div>
+                {{ field|addclass:'form-control' }}
+                <small id="{{ field.id_for_label }}-help" class="form-text text-mut">
+                <p>{{ field.help_text }}</p>
+                </small>
+              </div>
+            {% endfor %}
           <button type="submit" class="btn btn-primary">Отправить</button>
         </form>
       </div>

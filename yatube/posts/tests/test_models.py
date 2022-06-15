@@ -17,9 +17,10 @@ class PostsModelTest(TestCase):
             username='follower'
         )
         cls.group = Group.objects.create(
-            title='Тестовая группа',
-            slug='Тестовый слаг',
-            description='Тестовое описание',
+            title='Тестовое название группы',
+            slug='test-slug',
+            description='Тестовое описание группы',
+
         )
         cls.post = Post.objects.create(
             author=cls.user_author,
@@ -77,7 +78,7 @@ class PostsModelTest(TestCase):
             ('description', 'Добавьте описание группы', self.group),
             ('text', 'Добавьте описание поста', self.post),
             ('group', 'Укажите группу в которой опубликуется пост', self.post),
-            ('text', 'Оставьте комментарий', self.comment),
+            ('text', 'Введите текст', self.comment),
         )
         for value, expected, args in field_help_texts:
             with self.subTest(value=value):

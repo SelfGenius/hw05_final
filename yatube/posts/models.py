@@ -84,11 +84,12 @@ class Comment(models.Model):
     )
     text = models.TextField(
         verbose_name="Коментарий",
-        help_text="Оставьте комментарий"
+        help_text="Введите текст"
     )
     created = models.DateTimeField(
+        verbose_name="Дата создания",
+        db_index=True,
         auto_now_add=True,
-        verbose_name="Дата создания"
     )
 
     class Meta:

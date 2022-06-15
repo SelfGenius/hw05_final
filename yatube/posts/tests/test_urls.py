@@ -22,7 +22,7 @@ class PostURLTests(TestCase):
         )
         cls.group = Group.objects.create(
             title='Тестовое название группы',
-            slug='test_slug',
+            slug='test-slug',
             description='Тестовое описание группы',
         )
         cls.post = Post.objects.create(

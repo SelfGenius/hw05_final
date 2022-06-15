@@ -26,7 +26,7 @@ class PostPagesTests(TestCase):
         cls.group = Group.objects.create(
             title='Тестовое название группы',
             slug='test-slug',
-            description='Тестовое описание группы'
+            description='Тестовое описание группы',
         )
         cls.image = SimpleUploadedFile(
             name='small.gif',

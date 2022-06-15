@@ -33,7 +33,7 @@ def group_posts(request, slug):
         'group': group,
         'page_obj': paginator(request.GET.get('page'), post_list),
     }
-    return render(request, 'posts/group_list.html', context, )
+    return render(request, 'posts/group_list.html', context)
 
 
 def profile(request, username):
